@@ -1,5 +1,5 @@
 import express from 'express'
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 import cors from 'cors'
 
@@ -43,7 +43,23 @@ app.post("/services",async(req,res)=>{
   const result=await allservices.insertOne(newService);
   res.send(result)
 })
+app.get('/services/:id',async(req,res)=>{
+  const id=req.params.id;
+  const query={_id:new ObjectId(id)};
+  const result=await allservices.findOne(query);
 
+  res.send(result)
+})
+app.patch("/services/:id",async(req,res)=>{
+  const id=req.params.id;
+  const updatedService=req.body;
+  const filter={_id: new ObjectId(id)};
+  const updateDoc={$set:updatedService};
+  console.log(updateDoc)
+  const result=await allservices.updateOne(filter,updateDoc);
+  console.log(result)
+  res.send(result)
+})
 
 
 app.listen(PORT,()=>{
