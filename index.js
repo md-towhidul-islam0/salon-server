@@ -38,7 +38,11 @@ app.get('/services',async(req,res)=>{
   const reult=await cursor.toArray();
   res.send(reult)
 })
-
+app.post("/services",async(req,res)=>{
+  const newService=req.body;
+  const result=await allservices.insertOne(newService);
+  res.send(result)
+})
 
 
 
