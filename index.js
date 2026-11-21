@@ -25,6 +25,7 @@ const database=connectedclient.db('salondb')
 const user=database.collection('user');
 const allservices=database.collection('service-collection');
 const sessions=database.collection('session');
+const allappointments=database.collection('appointments-Collection');
 
 const verifyToken=async(req,res,next)=>{
   const authHeader=req.headers.authorization;
@@ -69,12 +70,18 @@ app.get('/services',async(req,res)=>{
   const result=await cursor.toArray();
   res.send(result)
 })
+// app.get('/services/:id',async(req,res)=>{
+//   const id=req.params.id;
+//   const query={_id:new ObjectId(id)};
+//   const result=await allservices.findOne(query);
+//   res.send(result)
+// })
 app.post("/services",async(req,res)=>{
   const newService=req.body;
   const result=await allservices.insertOne(newService);
   res.send(result)
 })
-app.get('/services/:id',async(req,res)=>{
+app.get('/services/:id',verifyToken,async(req,res)=>{
   const id=req.params.id;
   const query={_id:new ObjectId(id)};
   const result=await allservices.findOne(query);
@@ -98,6 +105,19 @@ app.delete("/services/:id",async(req,res)=>{
   res.send(result)
 })  
 
+
+
+app.get('/appointments',async(req,res)=>{
+  const query={};
+  const cursor=allappointments.find(query);
+  const result=await cursor.toArray();
+  res.send(result)
+})  
+app.post("/appointments",async(req,res)=>{
+  const newAppointment=req.body;
+  const result=await allappointments.insertOne(newAppointment);
+  res.send(result)
+})
 
 app.listen(PORT,()=>{
   console.log(`App listening on port ${PORT}`)
