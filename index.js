@@ -155,4 +155,3 @@ app.get('/appointments/:id',async(req,res)=>{
 app.listen(PORT,()=>{
   console.log(`App listening on port ${PORT}`)
 })
-export default app
