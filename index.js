@@ -24,19 +24,50 @@ const connectedclient=await connectToMongoDB();
 const database=connectedclient.db('salondb')
 const user=database.collection('user');
 const allservices=database.collection('service-collection');
+const sessions=database.collection('session');
+
+const verifyToken=async(req,res,next)=>{
+  const authHeader=req.headers.authorization;
+  if (!authHeader){
+    return res.status(401).send({message:"unauthorized access"})
+  } 
+  const token=authHeader.split(' ')[1];
+  if (!token){
+    return res.status(403).send({message:"forbidden access"})
+  }
+  const query={token:token};
+  const session=await sessions.findOne(query);
+  if (!session){
+    return res.status(403).send({message:"forbidden access"})
+  } 
+  next()
+}
+
+
+
 
 app.get('/users',async(req,res)=>{
     const query={};
     const cursor=user.find(query);
-    const reult=await cursor.toArray();
-    res.send(reult)
+    const result=await cursor.toArray();
+    res.send(result)
 })
 
 app.get('/services',async(req,res)=>{
   const query={};
+  console.log(req.query)
+  if (req.query){
+    if (req.query.category)
+    {
+      query.category=req.query.category
+    }
+    if (req.query.search){
+      query.$or=[{name:{$regex:req.query.search,$options:'i'}}]
+    } 
+  }
   const cursor=allservices.find(query);
-  const reult=await cursor.toArray();
-  res.send(reult)
+  const result=await cursor.toArray();
+  res.send(result)
 })
 app.post("/services",async(req,res)=>{
   const newService=req.body;
@@ -60,6 +91,12 @@ app.patch("/services/:id",async(req,res)=>{
   console.log(result)
   res.send(result)
 })
+app.delete("/services/:id",async(req,res)=>{
+  const id=req.params.id;
+  const query={_id:new ObjectId(id)};
+  const result=await allservices.deleteOne(query);
+  res.send(result)
+})  
 
 
 app.listen(PORT,()=>{
