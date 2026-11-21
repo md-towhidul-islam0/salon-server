@@ -60,6 +60,17 @@ app.get('/users/:id',async(req,res)=>{
     const result=await cursor.toArray();
     res.send(result)
 })
+app.patch('/users/:id',async(req,res)=>{
+  const id=req.params.id;
+  const updatedService=req.body;
+  const filter={_id: new ObjectId(id)};
+  const updateDoc={$set:updatedService};
+  console.log(updateDoc)
+  const result=await user.updateOne(filter,updateDoc);
+  console.log(result)
+  res.send(result)
+})
+
 
 app.get('/services',async(req,res)=>{
   const query={};
@@ -92,7 +103,6 @@ app.get('/services/:id',verifyToken,async(req,res)=>{
   const id=req.params.id;
   const query={_id:new ObjectId(id)};
   const result=await allservices.findOne(query);
-
   res.send(result)
 })
 app.patch("/services/:id",async(req,res)=>{
@@ -100,7 +110,6 @@ app.patch("/services/:id",async(req,res)=>{
   const updatedService=req.body;
   const filter={_id: new ObjectId(id)};
   const updateDoc={$set:updatedService};
-  console.log(updateDoc)
   const result=await allservices.updateOne(filter,updateDoc);
   console.log(result)
   res.send(result)
@@ -125,6 +134,17 @@ app.post("/appointments",async(req,res)=>{
   const result=await allappointments.insertOne(newAppointment);
   res.send(result)
 })
+app.patch("/appointments/:id",async(req,res)=>{
+  const id=req.params.id;
+  const updatedService=req.body;
+  const filter={_id: new ObjectId(id)};
+  const updateDoc={$set:updatedService};
+  console.log(updateDoc)
+  const result=await allappointments.updateOne(filter,updateDoc);
+  console.log(result)
+  res.send(result)
+})
+
 
 app.listen(PORT,()=>{
   console.log(`App listening on port ${PORT}`)
