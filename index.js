@@ -144,6 +144,12 @@ app.patch("/appointments/:id",async(req,res)=>{
   console.log(result)
   res.send(result)
 })
+app.get('/appointments/:id',async(req,res)=>{
+  const id=req.params.id;
+  const query={customerId:id};
+  const result=await allappointments.find(query).toArray()
+  res.send(result)
+})
 
 
 app.listen(PORT,()=>{
