@@ -2,6 +2,7 @@ import express from 'express'
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 import cors from 'cors'
+import Stripe from 'stripe';
 
 
 
@@ -26,7 +27,8 @@ const user = database.collection('user');
 const allservices = database.collection('service-collection');
 const sessions = database.collection('session');
 const allappointments = database.collection('appointments-Collection');
-const Allpayment =database.collection('transactions-collection')
+const Allpayment = database.collection('transactions-collection')
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -179,20 +181,21 @@ app.post('/transactions', async (req, res) => {
       payment_status,
       customer_email,
       userId: metadata.userID,
-      serviceID:metadata.serviceID,
+      serviceID: metadata.serviceID,
       payment_intent,
       amount_total,
       currency,
       line_items
     }
     const result = await Allpayment.insertOne(payment);
-    const query = { _id: new ObjectId(metadata.userID) }
+    const query = { _id: new ObjectId(metadata.serviceID) }
     const updateDOC = {
       $set: {
-        premium: true
+        paymentStatus: "paid"
       }
     }
-    const updateResult = await users.updateOne(query, updateDOC)
+    const updateResult = await allappointments.updateOne(query, updateDOC)
+    console.log("All success")
     res.send({ sussess: true, result, updateResult })
     return
   }
