@@ -128,7 +128,7 @@ app.get('/services/:id', verifyToken, async (req, res) => {
     const query = { _id: new ObjectId(id) };
 
     const result = await allservices.findOne(query);
-
+    console.log(result)
     // Check whether service exists
     if (!result) {
       return res.status(404).send({
@@ -137,10 +137,7 @@ app.get('/services/:id', verifyToken, async (req, res) => {
       });
     }
 
-    res.status(200).send({
-      success: true,
-      data: result
-    });
+    res.send(result)
 
   } catch (error) {
     console.error(error);
