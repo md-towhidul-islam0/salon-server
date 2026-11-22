@@ -104,12 +104,54 @@ app.post("/services", async (req, res) => {
   const result = await allservices.insertOne(newService);
   res.send(result)
 })
+// app.get('/services/:id', verifyToken, async (req, res) => {
+//   const id = req.params.id;
+//     console.log(id)
+//   const query = { _id: new ObjectId(id) };
+//   console.log(query)
+//   const result = await allservices.findOne(query);
+//   res.send(result)
+// })
+
 app.get('/services/:id', verifyToken, async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: new ObjectId(id) };
-  const result = await allservices.findOne(query);
-  res.send(result)
-})
+  try {
+    const id = req.params.id;
+
+    // Check whether ID is valid
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).send({
+        success: false,
+        message: 'Invalid service ID'
+      });
+    }
+
+    const query = { _id: new ObjectId(id) };
+
+    const result = await allservices.findOne(query);
+
+    // Check whether service exists
+    if (!result) {
+      return res.status(404).send({
+        success: false,
+        message: 'Service not found'
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).send({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 app.patch("/services/:id", async (req, res) => {
   const id = req.params.id;
   const updatedService = req.body;
