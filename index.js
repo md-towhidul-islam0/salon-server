@@ -152,6 +152,12 @@ app.get('/appointments/:id', async (req, res) => {
   const result = await allappointments.find(query).toArray()
   res.send(result)
 })
+app.get('/appointments/e/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await allappointments.findOne(query)
+  res.send(result)
+})
 
 
 app.post('/transactions', async (req, res) => {
@@ -201,6 +207,13 @@ app.post('/transactions', async (req, res) => {
   }
   res.send({ sussess: false });
 
+})
+app.get('/transactions', async (req, res) => {
+
+  const query = {};
+  const cursor = Allpayment.find(query);
+  const result = await cursor.toArray();
+  res.send(result)
 })
 
 
