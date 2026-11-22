@@ -56,6 +56,9 @@ app.get('/users', async (req, res) => {
   const result = await cursor.toArray();
   res.send(result)
 })
+app.get('/', async (req, res) => {
+  res.send("HairSalon")
+})
 app.get('/users/:id', async (req, res) => {
   const id = req.params.id
   const query = { _id: new ObjectId(id) };
@@ -220,3 +223,5 @@ app.get('/transactions', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`)
 })
+
+export default app
