@@ -6,9 +6,9 @@ import cors from 'cors'
 
 
 
-const app=express();
+const app = express();
 app.use(express.json());
-const PORT=process.env.PORT || 5000
+const PORT = process.env.PORT || 5000
 app.use(cors());
 const client = new MongoClient(process.env.MONGODB_URL);
 export async function connectToMongoDB() {
@@ -20,72 +20,72 @@ export async function connectToMongoDB() {
     console.dir(err);
   }
 }
-const connectedclient=await connectToMongoDB();
-const database=connectedclient.db('salondb')
-const user=database.collection('user');
-const allservices=database.collection('service-collection');
-const sessions=database.collection('session');
-const allappointments=database.collection('appointments-Collection');
+const connectedclient = await connectToMongoDB();
+const database = connectedclient.db('salondb')
+const user = database.collection('user');
+const allservices = database.collection('service-collection');
+const sessions = database.collection('session');
+const allappointments = database.collection('appointments-Collection');
+const Allpayment =database.collection('transactions-collection')
 
-const verifyToken=async(req,res,next)=>{
-  const authHeader=req.headers.authorization;
-  if (!authHeader){
-    return res.status(401).send({message:"unauthorized access"})
-  } 
-  const token=authHeader.split(' ')[1];
-  if (!token){
-    return res.status(403).send({message:"forbidden access"})
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorized access" })
   }
-  const query={token:token};
-  const session=await sessions.findOne(query);
-  if (!session){
-    return res.status(403).send({message:"forbidden access"})
-  } 
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(403).send({ message: "forbidden access" })
+  }
+  const query = { token: token };
+  const session = await sessions.findOne(query);
+  if (!session) {
+    return res.status(403).send({ message: "forbidden access" })
+  }
   next()
 }
 
 
 
 
-app.get('/users',async(req,res)=>{
-    const query={};
-    const cursor=user.find(query);
-    const result=await cursor.toArray();
-    res.send(result)
+app.get('/users', async (req, res) => {
+  const query = {};
+  const cursor = user.find(query);
+  const result = await cursor.toArray();
+  res.send(result)
 })
-app.get('/users/:id',async(req,res)=>{
-  const id=req.params.id
-    const query={_id:new ObjectId(id)};
-    const cursor=user.find(query);
-    const result=await cursor.toArray();
-    res.send(result)
+app.get('/users/:id', async (req, res) => {
+  const id = req.params.id
+  const query = { _id: new ObjectId(id) };
+  const cursor = user.find(query);
+  const result = await cursor.toArray();
+  res.send(result)
 })
-app.patch('/users/:id',async(req,res)=>{
-  const id=req.params.id;
-  const updatedService=req.body;
-  const filter={_id: new ObjectId(id)};
-  const updateDoc={$set:updatedService};
+app.patch('/users/:id', async (req, res) => {
+  const id = req.params.id;
+  const updatedService = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = { $set: updatedService };
   console.log(updateDoc)
-  const result=await user.updateOne(filter,updateDoc);
+  const result = await user.updateOne(filter, updateDoc);
   console.log(result)
   res.send(result)
 })
 
 
-app.get('/services',async(req,res)=>{
-  const query={};
+app.get('/services', async (req, res) => {
+  const query = {};
   console.log(req.query)
-  if (req.query){
-    if (req.query.category)
-    {
-      query.category=req.query.category
+  if (req.query) {
+    if (req.query.category) {
+      query.category = req.query.category
     }
-    if (req.query.search){
-      query.$or=[{name:{$regex:req.query.search,$options:'i'}}]
-    } 
+    if (req.query.search) {
+      query.$or = [{ name: { $regex: req.query.search, $options: 'i' } }]
+    }
   }
-  const cursor=allservices.find(query);
-  const result=await cursor.toArray();
+  const cursor = allservices.find(query);
+  const result = await cursor.toArray();
   res.send(result)
 })
 // app.get('/services/:id',async(req,res)=>{
@@ -94,64 +94,113 @@ app.get('/services',async(req,res)=>{
 //   const result=await allservices.findOne(query);
 //   res.send(result)
 // })
-app.post("/services",async(req,res)=>{
-  const newService=req.body;
-  const result=await allservices.insertOne(newService);
+app.post("/services", async (req, res) => {
+  const newService = req.body;
+  const result = await allservices.insertOne(newService);
   res.send(result)
 })
-app.get('/services/:id',verifyToken,async(req,res)=>{
-  const id=req.params.id;
-  const query={_id:new ObjectId(id)};
-  const result=await allservices.findOne(query);
+app.get('/services/:id', verifyToken, async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await allservices.findOne(query);
   res.send(result)
 })
-app.patch("/services/:id",async(req,res)=>{
-  const id=req.params.id;
-  const updatedService=req.body;
-  const filter={_id: new ObjectId(id)};
-  const updateDoc={$set:updatedService};
-  const result=await allservices.updateOne(filter,updateDoc);
+app.patch("/services/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedService = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = { $set: updatedService };
+  const result = await allservices.updateOne(filter, updateDoc);
   console.log(result)
   res.send(result)
 })
-app.delete("/services/:id",async(req,res)=>{
-  const id=req.params.id;
-  const query={_id:new ObjectId(id)};
-  const result=await allservices.deleteOne(query);
-  res.send(result)
-})  
-
-
-
-app.get('/appointments',async(req,res)=>{
-  const query={};
-  const cursor=allappointments.find(query);
-  const result=await cursor.toArray();
-  res.send(result)
-})  
-app.post("/appointments",async(req,res)=>{
-  const newAppointment=req.body;
-  const result=await allappointments.insertOne(newAppointment);
+app.delete("/services/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await allservices.deleteOne(query);
   res.send(result)
 })
-app.patch("/appointments/:id",async(req,res)=>{
-  const id=req.params.id;
-  const updatedService=req.body;
-  const filter={_id: new ObjectId(id)};
-  const updateDoc={$set:updatedService};
+
+
+
+app.get('/appointments', async (req, res) => {
+  const query = {};
+  const cursor = allappointments.find(query);
+  const result = await cursor.toArray();
+  res.send(result)
+})
+app.post("/appointments", async (req, res) => {
+  const newAppointment = req.body;
+  const result = await allappointments.insertOne(newAppointment);
+  res.send(result)
+})
+app.patch("/appointments/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedService = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = { $set: updatedService };
   console.log(updateDoc)
-  const result=await allappointments.updateOne(filter,updateDoc);
+  const result = await allappointments.updateOne(filter, updateDoc);
   console.log(result)
   res.send(result)
 })
-app.get('/appointments/:id',async(req,res)=>{
-  const id=req.params.id;
-  const query={customerId:id};
-  const result=await allappointments.find(query).toArray()
+app.get('/appointments/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { customerId: id };
+  const result = await allappointments.find(query).toArray()
   res.send(result)
 })
 
 
-app.listen(PORT,()=>{
+app.post('/transactions', async (req, res) => {
+  const { sessionId } = req.body;
+  const {
+    status,
+    customer_email,
+    payment_intent,
+    payment_status,
+    metadata,
+    amount_total,
+    currency,
+    line_items
+  } = await stripe.checkout.sessions.retrieve(sessionId)
+  console.log(status, payment_status)
+  if (status === 'complete' && payment_status === "paid") {
+    const sessionQuery = { sessionId };
+    const isPrev = await Allpayment.findOne(sessionQuery);
+    if (isPrev) {
+      console.log("already payment")
+      res.send({ success: false, message: "Already payment" })
+      return
+    }
+    const payment = {
+      sessionId,
+      status,
+      payment_status,
+      customer_email,
+      userId: metadata.userID,
+      serviceID:metadata.serviceID,
+      payment_intent,
+      amount_total,
+      currency,
+      line_items
+    }
+    const result = await Allpayment.insertOne(payment);
+    const query = { _id: new ObjectId(metadata.userID) }
+    const updateDOC = {
+      $set: {
+        premium: true
+      }
+    }
+    const updateResult = await users.updateOne(query, updateDOC)
+    res.send({ sussess: true, result, updateResult })
+    return
+  }
+  res.send({ sussess: false });
+
+})
+
+
+app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`)
 })
